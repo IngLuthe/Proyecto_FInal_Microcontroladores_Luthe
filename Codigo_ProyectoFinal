@@ -1,0 +1,108 @@
+#include "LiquidCrystal.h"
+#include "Limits.h"
+
+const int sensorLuz = 1; //pino que conectamos o fotoresistor
+const int sensorTemp = 0; //pino que conectamos o lm35
+
+int valorSensorLuz = 0; //para ler o valor do fotoresistor
+int valorSensorTemp = 0; //para ler o valor do lm35
+int menorValorTemp = INT_MAX; //menor valor da temperatura
+
+//Boton push
+int pinBoton = 38;
+int pinButton = 34;
+
+//Led RESET rgb colores
+int ledRojo = 48;
+int ledVerde = 52;
+int ledAzul = 51;
+
+//Led ALERTA rgb colores
+int LRojo = 13;
+int LVerde = 12;
+int LAzul = 11;
+
+LiquidCrystal lcd(9, 8, 5, 4, 3, 2);
+ 
+// Crear variable para estado del botón RESET
+bool boton = LOW;
+
+// Crear variable para estado del botón ALERTA
+bool button = LOW;
+
+void setup() {
+ lcd.begin(16, 2); //estamos usando um LCD de 16x2 
+
+ // Configuración de los pines de entrada y salida
+ 
+  pinMode(pinBoton,INPUT); // Entrada digital para el botón RESET
+
+  pinMode(pinButton,INPUT); // Entrada digital para el botón ALERTA
+
+// Configuracion de los colores RGB 
+  pinMode(ledRojo,OUTPUT);
+  pinMode(ledVerde,OUTPUT);
+  pinMode(ledAzul,OUTPUT);
+
+  pinMode(LRojo,OUTPUT);
+  pinMode(LVerde,OUTPUT);
+  pinMode(LAzul,OUTPUT);
+}
+ 
+void loop() { 
+ //Leitura do valor de luz
+ valorSensorLuz = analogRead(sensorLuz);
+ 
+ //de 8 leituras, usaremos o menor valor 
+ menorValorTemp = INT_MAX; 
+ for (int i = 1; i <= 8; i++) {
+ //Lendo o valor do sensor de temperatura.
+ valorSensorTemp = analogRead(sensorTemp); 
+ 
+ //convertendo o valor
+ 
+ valorSensorTemp *= 0.028; 
+ 
+ if (valorSensorTemp < menorValorTemp) {
+ menorValorTemp = valorSensorTemp;
+ }
+ 
+ delay(150); 
+ } 
+ 
+ lcd.clear(); //limpa o display do LCD. 
+ lcd.print("Temp: "); //imprime a string no display do LCD. 
+ lcd.print(menorValorTemp);
+ lcd.write(B11011111); //Simbolo de graus celsius
+ lcd.print("C");
+ 
+ lcd.setCursor(0,1); 
+ lcd.print("Luz: "); //imprime a string no display do LCD. 
+ lcd.print(valorSensorLuz); 
+ 
+ delay(2000); //aguarda 2 segundos
+
+// Leer el estado del botón y encender o apagar el LED
+  boton = digitalRead(pinBoton);
+ 
+  if(boton == HIGH){            // Si el botón está pulsado
+    digitalWrite(ledRojo,255);
+    digitalWrite(ledVerde,0);
+    digitalWrite(ledAzul,255);  // Enciende el LED
+  }
+  else{                         // Si no
+    digitalWrite(ledRojo,0); 
+    digitalWrite(ledVerde,255);
+    digitalWrite(ledAzul,255);   // Apaga el LED
+  }
+
+// Leer el estado del botón y encender o APAGAR LA ALARMA
+  button = digitalRead(pinButton);
+ 
+  if(button == HIGH){            // Si el botón está pulsado
+    digitalWrite(LRojo,255);
+  }
+  else{                         // Si no
+    digitalWrite(LVerde,255);
+  }
+}
